@@ -1,0 +1,14 @@
+# Results - Figures
+
+此目录用于存放所有实验生成的图表和可视化结果。
+
+## 图表列表
+
+- `10bit_comparison.png` - PennyLane 和 Qiskit 实现的对比
+- `10bit_vs_appendix.png` - 与附录结果的对比
+- `4bit_global_noise_plot.png` - 全局噪声模拟结果
+- `4bit_enhanced_noise_plot.png` - 增强噪声模拟结果
+- `4bit_global_noise_analysis.png` - 全局噪声详细分析
+- `4bit_enhanced_noise_analysis.png` - 增强噪声详细分析
+- `4bit_noise_comparison.png` - 噪声模型对比
+- `4bit_noise_heatmap.png` - 噪声影响热图

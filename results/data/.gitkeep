@@ -1,0 +1,15 @@
+# Results - Data
+
+此目录用于存放实验生成的原始数据输出。
+
+## 数据文件列表
+
+- `10bit_pennylane_out.csv` - PennyLane 10-bit 实验输出
+- `10bit_qiskit_out.csv` - Qiskit 10-bit 实验输出
+- `10bit_comparison.csv` - 两种实现的对比数据
+- `4bit_global_noise_out.csv` - 全局噪声实验数据
+- `4bit_enhanced_noise_out.csv` - 增强噪声实验数据
+
+## 注意
+
+如果数据文件很大（> 100MB），建议将其添加到 `.gitignore` 中，避免上传到 Git 仓库。
