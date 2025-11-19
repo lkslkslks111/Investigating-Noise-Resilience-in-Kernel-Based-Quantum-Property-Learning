@@ -1,38 +1,20 @@
-# Investigating Noise Resilience in Kernel-Based Quantum Property Learning
 # 基于核方法的量子性质学习中的噪声韧性研究
 
-**Languages / 语言版本:** [English (EN)](README_EN.md) | [中文 (CN)](README_CN.md)
+**[English](README_EN.md) | 中文版**
 
 ---
 
-**Author / 作者:** [Your Name]  
-**Date / 日期:** November 17, 2025 / 2025年11月17日  
-**Inspired by / 项目灵感:** Yuxuan Du, et al. "Efficient Learning for Linear Properties of Bounded-Gate Quantum Circuits" (arXiv:2408.12199v2) and the associated [GitHub Repository](https://github.com/yuxuan-du/Efficient_Predicting_Bounded_Gate_QC)
+**作者:** lks  
+**日期:** 2025年11月17日  
+**项目灵感:** Yuxuan Du, et al. "Efficient Learning for Linear Properties of Bounded-Gate Quantum Circuits" (arXiv:2408.12199v2) 及相关 [GitHub 仓库](https://github.com/yuxuan-du/Efficient_Predicting_Bounded_Gate_QC)
 
 ---
 
-## 1. Project Overview / 项目概述
-
-This project is an extension study of the paper "Efficient Learning for Linear Properties of Bounded-Gate Quantum Circuits". The original paper proposed a kernel-based ML model using **Classical Shadows** and **Truncated Trigonometric Expansions** to efficiently learn linear properties of quantum circuits.
-
-This research begins with a core question:
-
-> **Can the "truncation" mechanism in the original paper, beyond balancing computational cost with approximation accuracy, act as a "frequency-domain filter" on real noisy hardware to mitigate the impact of thermal relaxation, TLS, and other noise sources on the learning model under limited sampling?**
-
-To verify this hypothesis, this project makes the following contributions:
-
-1. **Reproduction & Reconstruction:** Independently implemented the quantum ansatz circuits from the original paper using PennyLane and Qiskit for the "Pretraining Hamiltonian-variational ansatz" task, reproducing VQE results similar to the original paper on a 10-qubit TFIM (Transverse Field Ising Model).
-
-2. **Extension & Noise Simulation:** Due to computational limitations, we constructed 4-qubit TFIM simulations. To test our core hypothesis, we designed three datasets:
-   - **Noiseless (`shadow`):** Ideal noise-free simulation
-   - **Global Noise (`noise_shadow`):** Applied global thermal relaxation noise
-   - **TLS-like Noise (`tls_noise_shadow`):** Applied a TLS (Two-Level System)-like thermal relaxation noise that intensifies at specific parameter points
-
-3. **Truncation Analysis:** Using the original paper's training procedure, we systematically trained and analyzed the impact of truncation parameter Λ from 1 to 7 on model performance across the three noise datasets.
+## 1. 项目概述
 
 本项目是论文 "Efficient Learning for Linear Properties of Bounded-Gate Quantum Circuits" 的一项拓展性研究。原论文提出了一种基于**经典阴影 (Classical Shadows)** 和**截断三角展开 (Truncated Trigonometric Expansions)** 的核方法 (Kernel-based ML model)，可以高效地学习量子电路的线性特性。
 
-本研究从一个核心问题出发：
+本研究从一个核心问题出发:
 
 > **原论文中的"截断"机制，除了平衡计算开销与近似精度之外，能否在实际含噪硬件上表现为一种"频域滤波器"，在有限样本下减弱热弛豫、TLS 等噪声对学习模型的影响？**
 
@@ -340,91 +322,19 @@ $$\sum_{\|\omega\|_0>\Lambda}2^{-\|\omega\|_0}|\alpha_{\omega}^{\text{TLS}}|^2\t
 
 ---
 
-## 3. Key Findings and Analysis / 关键发现与分析
+## 3. 数值结果：TLS 噪声、截断与学习目标的关系
 
-Our 4-qubit noise experiment data (shown in the figure below) strongly supports our hypothesis.
-
-*(The figure above is the output of `analyze_truncation_results.py`, showing trends of all key metrics as Λ varies)*
-
-**Finding 1: An "Optimal Truncation Point" Exists (Lambda = 2)**
-
-- Observe the **MSE** (Mean Squared Error), **R² Score**, and **Pearson Correlation** plots (top row).
-- At Λ=1, the model is too simple with poor performance (underfitting).
-- At **Λ=2**, all three metrics simultaneously reach their **optimal values**: lowest MSE (~0.03), highest R² (~0.9).
-
-**Finding 2: Truncation Effectively "Filters Out" Noise**
-
-- This is the core conclusion of this project. At the "optimal point" Λ=2, the three curves—`Shadow` (noiseless, blue), `noise_shadow` (global noise, red), `tls_noise_shadow` (TLS noise, green)—**almost completely overlap**.
-- This strongly demonstrates that when Λ=2, the model not only predicts most accurately but is also **completely insensitive to both types of thermal relaxation noise we introduced**, successfully verifying our hypothesis.
-
-**Finding 3: "Curse of Dimensionality" Leads to Overfitting**
-
-- Why does performance drop dramatically when Λ > 2?
-- The **Feature Dimension** plot (bottom right) provides the answer: the number of features grows **exponentially** with Λ.
-- When Λ ≥ 3, the model becomes too complex and begins to learn **noise** rather than **signal**, leading to "overfitting". This is particularly evident in the R² plot, where R² becomes negative as Λ increases, meaning the model's predictions are worse than random guessing.
-
-我们的4-qubit噪声实验数据（如下图所示）有力地支持了我们的假设。
-
-*(上图是 `analyze_truncation_results.py` 的输出，展示了所有关键指标随 Λ 变化的趋势)*
-
-**发现 1：存在"最佳截断点" (Lambda = 2)**
-
-- 观察 **MSE** (均方误差)、**R² Score** 和 **Pearson Correlation** 图（上排）。
-- 在 Λ=1 时，模型过于简单，性能不佳（欠拟合）。
-- 在 **Λ=2** 时，所有三个指标同时达到**最佳值**：MSE最低 (约 0.03)，R²最高 (约 0.9)。
-
-**发现 2：截断可有效"滤除"噪声**
-
-- 这是本项目的核心结论。在 Λ=2 这个"最佳点"上，三条曲线——`Shadow` (无噪声, 蓝色), `noise_shadow` (全局噪声, 红色), `tls_noise_shadow` (TLS噪声, 绿色)——**几乎完全重合**。
-- 这有力地证明，当 Λ=2 时，模型不仅预测最准，而且**对我们引入的两种热弛豫噪声完全不敏感**，成功验证了我们的假设。
-
-**发现 3："维度灾难"导致过拟合**
-
-- 为什么 Λ > 2 时性能反而急剧下降？
-- **Feature Dimension** (特征维度) 图（右下）给出了答案：特征数量随 Λ **指数级增长**。
-- 当 Λ ≥ 3 时，模型变得过于复杂，它开始学习数据中的**噪声**而不是**信号**，导致"过拟合"。这在 R² 图中表现得尤为明显，当 Λ 增大时，R² 变为负数，意味着模型的预测效果还不如一个随机猜测。
-
-**补充分析：TLS 噪声、截断与学习目标的关系**
-
-在第二节的频率分解框架下，我们面临一个核心问题：给定一个固定的目标函数 $f(x,O)$（如真实硬件的 $f_{\mathrm{noisy}}$），理论上 $\Lambda$ 越大，截断核对该目标的逼近越好。但在实际量子器件上，训练标签来自含噪状态 $\rho_{\mathrm{noisy}}(x)$，而研究者通常更关心理想态 $\rho_{\mathrm{id}}(x)$ 对应的 $f_{\mathrm{id}}(x,O)$。这引出一个关键问题：**在有限 $\Lambda$ 和有限样本数 $n$ 下训练出的模型，究竟更接近 $f_{\mathrm{noisy}}$ 还是 $f_{\mathrm{id}}$？** 对于显式依赖 $x$ 且在 hotspot 附近剧烈变化的 TLS 噪声，这个问题尤为微妙。
+在第二节的频率分解框架下，我们面临一个核心问题：给定一个固定的目标函数 $f(x,O)$（如真实硬件的 $f_{\mathrm{noisy}}$），理论上 $\Lambda$ 越大，截断核对该目标的逼近越好。但在实际量子器件上，训练标签来自含噪状态 $\rho_{\mathrm{noisy}}(x)$，而研究者通常更关心理想态 $\rho_{\mathrm{id}}(x)$ 对应的 $f_{\mathrm{id}}(x,O) = \mathrm{Tr}(\rho_{\mathrm{id}}(x)O)$。这引出一个关键问题：**在有限 $\Lambda$ 和有限样本数 $n$ 下训练出的模型，究竟更接近 $f_{\mathrm{noisy}}$ 还是 $f_{\mathrm{id}}$？** 对于显式依赖 $x$ 且在 hotspot 附近剧烈变化的 TLS 噪声，这个问题尤为微妙。
 
 从理论上讲，若将有噪硬件视为"真实世界"，大 $\Lambda$ 在逼近该目标时更为忠实。然而实践中，研究者往往更关注潜在的理想态结构。此时需要区分信号部分（低频段中 $f_{\mathrm{id}}$ 和 $f_{\mathrm{noisy}}$ 共有的结构）与噪声部分（TLS 在高频尾部额外填充的成分）。更大的 $\Lambda$ 会学习噪声的高频结构，使模型逼近 $f_{\mathrm{noisy}}$；而较小的 $\Lambda$ 通过截断高 $\|\omega\|_0$ 频率，仅保留低阶结构，相当于对"无噪信号+噪声"进行低通滤波，剩余部分更接近 $f_{\mathrm{id}}$ 的低频成分。这正是本项目强调的**"截断作为频域隐式去噪"**的核心含义。
 
-在当前 4-qubit TFIM 实验中，这一图像仅显现雏形。在低截断区间（$\Lambda=1\sim3$），三条曲线几乎重合（MSE 约 $0.03\sim0.04$，$R^2$ 约 $0.89\sim0.92$），表明 TLS 噪声的高频结构未能完全被推至高阶模式，部分仍泄漏到低阶频率中。因此低截断在去除部分噪声的同时，也损失了理想态与平滑噪声共享的信息，"偏向理想态"的效果不显著。当 $\Lambda$ 增至 $5,6,7$ 时，所有数据集严重过拟合（MSE 飙升、$R^2$ 变负），TLS 曲线表现略差，提示其高频噪声使大 $\Lambda$ 模型更偏向有噪硬件。但此时已进入样本数远小于特征维度的高方差区，难以区分"忠实学习 $f_{\mathrm{TLS}}$"与"纯统计过拟合"的贡献。
+在当前 4-qubit TFIM 实验中，这一图像仅显现雏形。在低截断区间（$\Lambda=1\sim3$），三条曲线（`shadow`、`noise_shadow`、`tls_noise_shadow`）几乎重合（MSE 约 $0.03\sim0.04$，$R^2$ 约 $0.89\sim0.92$），表明 TLS 噪声的高频结构未能完全被推至高阶模式，部分仍泄漏到低阶频率中。因此低截断在去除部分噪声的同时，也损失了理想态与平滑噪声共享的信息，"偏向理想态"的效果不显著。当 $\Lambda$ 增至 $5,6,7$ 时，所有数据集严重过拟合（MSE 飙升、$R^2$ 变负），TLS 曲线表现略差，提示其高频噪声使大 $\Lambda$ 模型更偏向有噪硬件。但此时已进入样本数远小于特征维度的高方差区，难以区分"忠实学习 $f_{\mathrm{TLS}}$"与"纯统计过拟合"的贡献。
 
-总结而言，在 4-qubit + 当前 TLS 参数设置下，低截断区间的"低通滤波"抑制作用存在但较弱，高截断区间则伴随严重过拟合。我们预期在更高比特数、更高参数维度及更尖锐 TLS 条件下，将清晰观察到"截断学习理想态 vs. 有噪态"的分叉现象：对同一组含噪标签，低 $\Lambda$ 训练的模型更接近 $f_{\mathrm{id}}(x,O)$，而高 $\Lambda$ 模型则更接近 $f_{\mathrm{TLS}}(x,O)$。本次 4-qubit 结果表明，TLS 噪声向高频尾填充结构、使大 $\Lambda$ 模型偏向有噪态的趋势已经显现，但由于系统规模限制，"高维尾部"尚未充分发展，低截断对理想态的偏向仅呈现温和的一阶效应，而非理论预期的显著分叉。
+总结而言，在 4-qubit + 当前 TLS 参数设置下，低截断区间的"低通滤波"抑制作用存在但较弱，高截断区间则伴随严重过拟合。我们预期在更高比特数、更高参数维度及更尖锐 TLS 条件下，将清晰观察到"截断学习理想态 vs. 有噪态"的分叉现象：对同一组含噪标签，低 $\Lambda$ 训练的模型更接近 $f_{\mathrm{id}}(x,O)$（仅保留低频、受 TLS 污染轻微的部分），而高 $\Lambda$ 模型则更接近 $f_{\mathrm{TLS}}(x,O)$（能分辨 hotspot 和 drift 细节，但需更多样本和更强正则化）。本次 4-qubit 结果表明，TLS 噪声向高频尾填充结构、使大 $\Lambda$ 模型偏向有噪态的趋势已经显现，但由于系统规模限制，"高维尾部"尚未充分发展，低截断对理想态的偏向仅呈现温和的一阶效应，而非理论预期的显著分叉。
 
 ---
 
-## 4. Repository Structure / 仓库结构
-
-```
-.
-├── src/                           # Core implementation code
-│   ├── noise_sims/               # (Core Contribution) 4-qubit noise simulation experiments
-│   │   ├── simulator1.py         # 1. Global thermal relaxation noise simulator
-│   │   ├── simulator2.py         # 2. TLS-like noise simulator
-│   │   ├── pre_train_4_qubit_tfim_benchmark.py  # 3. Run pretraining for Lambda=1..7
-│   │   └── analyze_truncation_results.py  # 4. Generate 6-panel analysis figure
-│   ├── pennylane_impl/           # PennyLane implementations
-│   │   ├── simulator_4b.py       # 4-qubit TFIM simulator
-│   │   ├── simulator_10b.py      # 10-qubit TFIM simulator
-│   │   ├── pre_train_4-qubit_tfim_benchmark.py
-│   │   ├── pre_train_10qubit_tfim_benchmark.py
-│   │   └── learning_curve_analysis.py
-│   └── qiskit_impl/              # Qiskit implementations
-│       ├── simulator_qiskit.py   # 10-qubit Qiskit simulator
-│       └── pre_train_10-qubit_tfim_benchmark.py
-├── results/                      # Raw experimental data
-│   └── data/
-│       ├── noise_sims_data/      # 4-qubit noise simulation results
-│       │   ├── shadow_results/   # Noiseless (Lambda 1-7)
-│       │   ├── noise_shadow_results/  # Global noise (Lambda 1-7)
-│       │   └── tls_noise_shadow_results/  # TLS noise (Lambda 1-7)
-│       ├── pennylane_data/       # PennyLane simulation data (4b & 10b)
-│       └── qiskit_data/          # Qiskit simulation data (10b)
-└── requirements.txt              # Python dependencies
-```
+## 4. 仓库结构
 
 ```
 .
@@ -456,26 +366,7 @@ Our 4-qubit noise experiment data (shown in the figure below) strongly supports 
 
 ---
 
-## 5. Installation / 安装
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yourusername/quantum-kernel-noise-resilience.git
-   cd quantum-kernel-noise-resilience
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-   **Key dependencies:**
-   - PennyLane (≥0.37.0)
-   - Qiskit (≥1.0.0)
-   - Qiskit Aer / Qiskit IBM Runtime
-   - Qiskit Addon OBP (for classical shadows)
-   - NumPy, SciPy, scikit-learn, Matplotlib
-   - JAX, Optax (for optimization)
+## 5. 安装
 
 1. **克隆仓库：**
    ```bash
@@ -498,60 +389,10 @@ Our 4-qubit noise experiment data (shown in the figure below) strongly supports 
 
 ---
 
-## 6. Usage / 使用说明
-
-### 6.1 Reproduce Core Noise Experiments (Figure 1 in paper)
-**Run the complete 4-qubit noise simulation pipeline:**
-
-```bash
-# Step 1: Generate noiseless baseline data (Lambda 1-7)
-python src/noise_sims/simulator1.py --noise_type none
-
-# Step 2: Generate global thermal noise data
-python src/noise_sims/simulator1.py --noise_type global
-
-# Step 3: Generate TLS-like noise data
-python src/noise_sims/simulator2.py
-
-# Step 4: Run ML model training for all Lambda values (1-7) and all noise conditions
-python src/noise_sims/pre_train_4_qubit_tfim_benchmark.py
-
-# Step 5: Generate analysis plots (6-panel figure)
-python src/noise_sims/analyze_truncation_results.py
-```
-
-**Output:**
-- Raw data saved to `results/data/noise_sims_data/`
-- Analysis plots in script output directory
-
-### 6.2 PennyLane Simulations
-
-**4-qubit experiment:**
-```bash
-python src/pennylane_impl/simulator_4b.py
-python src/pennylane_impl/pre_train_4-qubit_tfim_benchmark.py
-```
-
-**10-qubit experiment:**
-```bash
-python src/pennylane_impl/simulator_10b.py
-python src/pennylane_impl/pre_train_10qubit_tfim_benchmark.py
-```
-
-**Learning curve analysis:**
-```bash
-python src/pennylane_impl/learning_curve_analysis.py
-```
-
-### 6.3 Qiskit Simulations
-
-**10-qubit Qiskit implementation:**
-```bash
-python src/qiskit_impl/simulator_qiskit.py
-python src/qiskit_impl/pre_train_10-qubit_tfim_benchmark.py
-```
+## 6. 使用说明
 
 ### 6.1 重现核心噪声实验（论文图1）
+
 **运行完整的4-qubit噪声模拟流程：**
 
 ```bash
@@ -604,17 +445,7 @@ python src/qiskit_impl/pre_train_10-qubit_tfim_benchmark.py
 
 ---
 
-## 7. Experimental Results / 实验结果
-
-All experimental results and visualizations are saved in the `results/` directory:
-- **shadow_results/**: Noiseless classical shadow measurements (Lambda 1-7)
-- **noise_shadow_results/**: Global thermal noise results (fixed T1/T2, Lambda 1-7)
-- **tls_noise_shadow_results/**: TLS fluctuating noise results (Lambda 1-7)
-
-Each subdirectory contains:
-- Adam optimization results
-- ML model fitting performance metrics
-- Trained model checkpoints (.joblib files)
+## 7. 实验结果
 
 所有实验结果和可视化保存在 `results/` 目录中：
 - **shadow_results/**: 无噪声经典阴影测量（Lambda 1-7）
@@ -628,18 +459,7 @@ Each subdirectory contains:
 
 ---
 
-## 8. Citation / 引用
-
-If you use this code or findings in your research, please cite:
-
-```bibtex
-@misc{quantum-kernel-noise-2025,
-  author = {Lks},
-  title = {Investigating Noise Resilience in Kernel-Based Quantum Property Learning},
-  year = {2025},
-  howpublished = {\url{https://github.com/yourusername/quantum-kernel-noise-resilience}}
-}
-```
+## 8. 引用
 
 如果您在研究中使用此代码或发现，请引用：
 
@@ -654,17 +474,12 @@ If you use this code or findings in your research, please cite:
 
 ---
 
-## 9. License / 许可证
-
-This project is open-source under the MIT License. See `LICENSE` file for details.
+## 9. 许可证
 
 本项目采用MIT许可证开源。详见`LICENSE`文件。
 
 ---
 
-## 10. Contact / 联系方式
+## 10. 联系方式
 
-For questions or collaboration inquiries, please open an issue on GitHub or contact the author directly.
-
-如有问题或合作咨询，请在GitHub上提交issue或直接联系作者.
- 
+如有问题或合作咨询，请在GitHub上提交issue或直接联系作者。
