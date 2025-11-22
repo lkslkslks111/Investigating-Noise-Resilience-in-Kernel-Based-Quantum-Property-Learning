@@ -147,12 +147,12 @@ for i in range(n):
     append_to_json_ideal(
         labels=E_exact, 
         para=params, 
-        filename="results\data\pennylane_data\10b\data_ideal.json"
+        filename=os.path.join("results", "data", "pennylane_data", "10b", "data_ideal.json")
     )
     append_to_json_shadow(
         labels=E_shadow, 
         para=params, 
-        filename="results\data\pennylane_data\10b\data_shadow.json"
+        filename=os.path.join("results", "data", "pennylane_data", "10b", "data_shadow.json")
     )
-    )
+    
    
